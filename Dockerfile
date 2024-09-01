@@ -8,15 +8,20 @@ WORKDIR /app
 COPY pnpm-lock.yaml ./
 COPY package.json tsconfig.json src ./
 
-RUN npm install -g pnpm && \
+# Adding logging to each step
+RUN echo "Installing global pnpm" && \
+    npm install -g pnpm && \
+    echo "Installing dependencies" && \
     pnpm install --frozen-lockfile && \
+    echo "Compiling TypeScript" && \
     pnpm tsc && \
+    echo "Pruning dev dependencies" && \
     pnpm prune --prod
 
-
-
 # Debug step to verify the dist directory exists
-RUN ls -la /app && ls -la /app/dist
+RUN echo "Verifying /app and /app/dist contents" && \
+    ls -la /app && ls -la /app/dist
+
 FROM base AS runner
 WORKDIR /app
 
