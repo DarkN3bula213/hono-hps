@@ -1,0 +1,50 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main  # Change this to your default branch name if different
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install pnpm
+        run: corepack enable pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run ESLint
+        run: pnpm lint
+
+      - name: Run Prettier
+        run: pnpm format
+
+      - name: Run Docker build
+        run: pnpm docker-build-test
+
+      - name: Deploy to VPS via SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_HOST: 195.35.6.171
+          VPS_USER: root
+        run: |
+          echo "$SSH_PRIVATE_KEY" > private_key
+          chmod 600 private_key
+          ssh -o StrictHostKeyChecking=no -i private_key root@$VPS_HOST "mkdir -p /var/www/hono_hps"
+          scp -o StrictHostKeyChecking=no -i private_key -r ./ root@$VPS_HOST:/var/www/hono_hps
+          ssh -o StrictHostKeyChecking=no -i private_key root@$VPS_HOST "cd /var/www/hono_hps && docker-compose up -d --build"
+        shell: bash
+
+      - name: Clean up
+        run: rm -f private_key

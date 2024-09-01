@@ -1,0 +1,26 @@
+{
+  "name": "hono-hps",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "lint:fix": "eslint . --fix",
+    "lint": "eslint '**/*.ts'",
+    "format": "prettier --write '**/*.ts'",
+    "docker-build-test": "docker build . -t myapp-test && docker run --rm myapp-test"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.12.2",
+    "hono": "^4.5.10"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.9.1",
+    "@types/eslint__js": "^8.42.3",
+    "@types/node": "^20.16.3",
+    "eslint": "^9.9.1",
+    "prettier": "^3.3.3",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.3.0"
+  }
+}
