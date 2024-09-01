@@ -31,7 +31,7 @@ jobs:
         run: pnpm format
 
       - name: Run Docker build
-        run: pnpm docker-build-test
+        run: docker build --no-cache . -t myapp-test
 
       - name: Deploy to VPS via SSH
         env:
