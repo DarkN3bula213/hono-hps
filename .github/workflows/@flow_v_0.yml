@@ -41,15 +41,17 @@ jobs:
       - name: Run Docker build
         run: docker build --no-cache . -t myapp-test
 
-      - name: Deploy to VPS
+      - name: Copy
         run: |
-          rsync -avz --exclude-from='.deployignore' ./ root@195.35.6.171:/var/www/hono
-          ssh -o StrictHostKeyChecking=no root@195.35.6.171 "
-            cd /var/www/hono && 
-            if [ -f docker-compose.yml ]; then
-              docker-compose up -d --build;
-            else
-              echo 'docker-compose.yml not found! Deployment failed.';
-              exit 1;
-            fi
-          "
+          rsync -avz -e "ssh -o StrictHostKeyChecking=no" --exclude '/node_modules'  ./ root@195.35.6.171:/var/www/hono/
+        shell: bash
+
+      
+      - name: Redeploy application
+        run: |
+          ssh -o StrictHostKeyChecking=no root@195.35.6.171 << EOF
+            cd /var/www/hono/
+            docker-compose down
+            docker-compose up --build -d
+          EOF
+        shell: bash
