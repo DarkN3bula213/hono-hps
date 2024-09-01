@@ -3,7 +3,7 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main  # Adjust this to your default b ranch if different
+      - main # Adjust this to your default b ranch if different
 
 jobs:
   build-and-deploy:
@@ -44,4 +44,12 @@ jobs:
       - name: Deploy to VPS
         run: |
           rsync -avz --exclude-from='.deployignore' ./ root@195.35.6.171:/var/www/hono
-          ssh -o StrictHostKeyChecking=no root@195.35.6.171 "cd /var/www/hono && docker-compose up -d --build"
+          ssh -o StrictHostKeyChecking=no root@195.35.6.171 "
+            cd /var/www/hono && 
+            if [ -f docker-compose.yml ]; then
+              docker-compose up -d --build;
+            else
+              echo 'docker-compose.yml not found! Deployment failed.';
+              exit 1;
+            fi
+          "
