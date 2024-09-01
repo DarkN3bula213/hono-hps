@@ -3,10 +3,10 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main  # Change this to your  branch name if different
+      - main  # Adjust this to your default b ranch if different
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,6 +21,14 @@ jobs:
       - name: Install pnpm
         run: corepack enable pnpm
 
+      - name: Start SSH Agent and Add Key
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+
+      - name: Test SSH Connection
+        run: ssh -o StrictHostKeyChecking=no root@195.35.6.171 'echo "SSH connection successful!"'
+
       - name: Install dependencies
         run: pnpm install
 
@@ -30,21 +38,10 @@ jobs:
       - name: Run Prettier
         run: pnpm format
 
-      - name: Run Docker build
-        run: docker build --no-cache . -t myapp-test
+      - name: Build Docker Image
+        run: pnpm docker-build-test
 
-      - name: Deploy to VPS via SSH
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}
-          VPS_HOST: 195.35.6.171
-          VPS_USER: root
+      - name: Deploy to VPS
         run: |
-          echo "$SSH_PRIVATE_KEY" > private_key
-          chmod 600 private_key
-          ssh-keyscan $VPS_HOST >> ~/.ssh/known_hosts
-          ssh -o StrictHostKeyChecking=no -i private_key root@$VPS_HOST "mkdir -p /var/www/hono_hps"
-          scp -o StrictHostKeyChecking=no -i private_key -r ./ root@$VPS_HOST:/var/www/hono_hps
-          ssh -o StrictHostKeyChecking=no -i private_key root@$VPS_HOST "cd /var/www/hono_hps && docker-compose up -d --build"
-        shell: bash
-      - name: Clean up
-        run: rm -f private_key
+          scp -o StrictHostKeyChecking=no -r ./ root@195.35.6.171:/var/www/hono
+          ssh -o StrictHostKeyChecking=no root@195.35.6.171 "cd /var/www/hono && docker-compose up -d --build"

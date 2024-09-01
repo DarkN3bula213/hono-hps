@@ -11,7 +11,7 @@ app.get('/', (c) => {
 });
 
 const port = 3000;
-// console.log(`Server is running on port ${port}`); 0301 1481025
+// console.log(`Server is running on port ${port}`); 0301 148102
 
 serve({
   fetch: app.fetch,
