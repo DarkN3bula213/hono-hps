@@ -43,5 +43,5 @@ jobs:
 
       - name: Deploy to VPS
         run: |
-          scp -o StrictHostKeyChecking=no -r ./ root@195.35.6.171:/var/www/hono
+          rsync -avz --exclude-from='.deployignore' ./ root@195.35.6.171:/var/www/hono
           ssh -o StrictHostKeyChecking=no root@195.35.6.171 "cd /var/www/hono && docker-compose up -d --build"
