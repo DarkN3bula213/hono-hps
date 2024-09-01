@@ -3,7 +3,7 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main  # Change this to your default branch name if different
+      - main  # Change this to your  branch name if different
 
 jobs:
   build:
@@ -41,10 +41,10 @@ jobs:
         run: |
           echo "$SSH_PRIVATE_KEY" > private_key
           chmod 600 private_key
+          ssh-keyscan $VPS_HOST >> ~/.ssh/known_hosts
           ssh -o StrictHostKeyChecking=no -i private_key root@$VPS_HOST "mkdir -p /var/www/hono_hps"
           scp -o StrictHostKeyChecking=no -i private_key -r ./ root@$VPS_HOST:/var/www/hono_hps
           ssh -o StrictHostKeyChecking=no -i private_key root@$VPS_HOST "cd /var/www/hono_hps && docker-compose up -d --build"
         shell: bash
-
       - name: Clean up
         run: rm -f private_key
